@@ -61,6 +61,15 @@ func addPost(postImage: UIImage, thread: String, username: String) {
     let path = "\(firStorageImagesPath)/\(UUID().uuidString)"
     
     // YOUR CODE HERE
+    let dateFormatter = DateFormatter()
+    dateFormatter.dateFormat = dateFormat
+    let date = dateFormatter.string(from: Date())
+    
+    let postDict = ["imagePath":path, "thread":thread, "username":username, "date": date]
+    
+    dbRef.child("Posts").childByAutoId().setValue(postDict)
+    
+    store(data: data, toPath: path)
 }
 
 /*
@@ -75,6 +84,14 @@ func store(data: Data, toPath path: String) {
     let storageRef = FIRStorage.storage().reference()
     
     // YOUR CODE HERE
+    storageRef.child(path).put(data, metadata: nil) {(metadata, error) in
+        guard let metadata = metadata else {
+            return
+        }
+        if metadata != nil{
+            print(error)
+        }
+    }
 }
 
 
@@ -100,6 +117,26 @@ func getPosts(user: CurrentUser, completion: @escaping ([Post]?) -> Void) {
     var postArray: [Post] = []
     
     // YOUR CODE HERE
+    dbRef.child(firPostsNode).observeSingleEvent(of: .value, with: {
+        (dataSnapshot) in
+        if dataSnapshot.exists(){
+            if let postDict:[String:AnyObject] = dataSnapshot.value{
+                user.getReadPostIDs(completion: {(postIDList) in
+                    for (key, value) in postDict{
+                        let isPostRead = postIDList.contains(postDict)
+                        let postToAdd = Post(id: key, username: value[firUsernameNode], postImagePath: value[firImagePathNode], thread: value[firThreadNode], dateString: value[firDateNode], read: isPostRead)
+                        postArray.append(postToAdd)
+                    }
+                })
+            }
+            else{
+                completion(nil)
+            }
+        }
+        else{
+            completion(nil)
+        }
+    })
 }
 
 func getDataFromPath(path: String, completion: @escaping (Data?) -> Void) {
