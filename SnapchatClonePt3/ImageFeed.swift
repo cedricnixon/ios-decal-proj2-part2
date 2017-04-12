@@ -127,6 +127,7 @@ func getPosts(user: CurrentUser, completion: @escaping ([Post]?) -> Void) {
                         let postToAdd = Post(id: key, username: value[firUsernameNode] as! String, postImagePath: value[firImagePathNode] as! String, thread: value[firThreadNode] as! String, dateString: value[firDateNode] as! String, read: isPostRead)
                         postArray.append(postToAdd)
                     }
+                    completion(postArray)
                 })
             }
             else{
