@@ -37,8 +37,8 @@ class CurrentUser {
         dbRef.child("\(firUsersNode)/\(id)/\(firReadPostsNode)").observeSingleEvent(of: .value, with: {(snap) in
                 if snap.exists() {
                     if snap.value != nil {
-                        for (key, _) in (snap.value as? [String:AnyObject])! {
-                            postArray.append(key)
+                        for (_, val) in (snap.value as? [String:AnyObject])! {
+                            postArray.append(val as! String)
                         }
                     }
                 }
